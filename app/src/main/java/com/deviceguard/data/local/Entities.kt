@@ -42,7 +42,13 @@ data class InstalledAppEntity(
     val apkSizeBytes: Long,
     val requestedPermissionCount: Int,
     val grantedDangerousPermissions: String,
-    val installerPackage: String?
+    val installerPackage: String?,
+    /** Có activity mở được từ launcher không. RAT thường ẩn icon → false. */
+    val hasLauncherIcon: Boolean = true,
+    /** Toàn bộ quyền ứng dụng KHAI BÁO (không chỉ quyền đã cấp), ngăn cách bằng dấu phẩy. */
+    val requestedPermissions: String = "",
+    /** Ứng dụng có kèm dịch vụ Trợ năng (Accessibility) — kênh bị RAT lạm dụng để đọc màn hình/keylog. */
+    val usesAccessibility: Boolean = false
 )
 
 /** Thời lượng sử dụng theo ứng dụng theo ngày (nguồn: UsageStatsManager). */

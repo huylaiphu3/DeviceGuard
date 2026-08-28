@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,12 +28,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.deviceguard.ui.screen.AppsScreen
 import com.deviceguard.ui.screen.DashboardScreen
+import com.deviceguard.ui.screen.RatDetectorScreen
 import com.deviceguard.ui.screen.RecoveryScreen
 import com.deviceguard.ui.screen.SettingsScreen
 import com.deviceguard.ui.screen.UsageScreen
 import com.deviceguard.ui.viewmodel.AppsViewModel
 import com.deviceguard.ui.viewmodel.DeviceGuardViewModels
 import com.deviceguard.ui.viewmodel.OverviewViewModel
+import com.deviceguard.ui.viewmodel.RatViewModel
 import com.deviceguard.ui.viewmodel.RecoveryViewModel
 import com.deviceguard.ui.viewmodel.SettingsViewModel
 
@@ -44,6 +47,7 @@ enum class Destination(
     DASHBOARD("dashboard", "Tổng quan", Icons.Default.Dashboard),
     USAGE("usage", "Sử dụng", Icons.Default.Timeline),
     APPS("apps", "Ứng dụng", Icons.Default.Apps),
+    THREATS("threats", "Rà soát", Icons.Default.Security),
     RECOVERY("recovery", "Phục hồi", Icons.Default.Restore),
     SETTINGS("settings", "Cài đặt", Icons.Default.Settings)
 }
@@ -103,6 +107,11 @@ fun DeviceGuardNavigation() {
             }
             composable(Destination.APPS.route) {
                 AppsScreen(viewModel<AppsViewModel>(factory = DeviceGuardViewModels.Factory))
+            }
+            composable(Destination.THREATS.route) {
+                RatDetectorScreen(
+                    viewModel<RatViewModel>(factory = DeviceGuardViewModels.Factory)
+                )
             }
             composable(Destination.RECOVERY.route) {
                 RecoveryScreen(

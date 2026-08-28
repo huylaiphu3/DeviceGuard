@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
 import android.os.Build
+import android.view.accessibility.AccessibilityManager
 import com.deviceguard.data.local.InstalledAppEntity
 import java.io.File
 
@@ -21,6 +22,7 @@ class InstalledAppCollector(private val context: Context) {
 
     fun collect(capturedAt: Long): List<InstalledAppEntity> {
         val dangerousCache = mutableMapOf<String, Boolean>()
+        val accessibilityPackages = accessibilityServicePackages()
         return queryPackages().map { pkg ->
             val appInfo = pkg.applicationInfo
             val requested = pkg.requestedPermissions.orEmpty()
@@ -49,10 +51,24 @@ class InstalledAppCollector(private val context: Context) {
                 apkSizeBytes = appInfo?.sourceDir?.let { runCatching { File(it).length() }.getOrDefault(0L) } ?: 0L,
                 requestedPermissionCount = requested.size,
                 grantedDangerousPermissions = grantedDangerous.joinToString(","),
-                installerPackage = installerOf(pkg.packageName)
+                installerPackage = installerOf(pkg.packageName),
+                hasLauncherIcon = pm.getLaunchIntentForPackage(pkg.packageName) != null,
+                requestedPermissions = requested.joinToString(","),
+                usesAccessibility = pkg.packageName in accessibilityPackages
             )
         }
     }
+
+    /**
+     * Các gói có kèm dịch vụ Trợ năng. Dùng [AccessibilityManager] để liệt kê dịch vụ
+     * đã cài (không cần quyền đặc biệt) — chỉ đọc, không bật gì cả.
+     */
+    private fun accessibilityServicePackages(): Set<String> = runCatching {
+        val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        manager.installedAccessibilityServiceList
+            .mapNotNull { it.resolveInfo?.serviceInfo?.packageName }
+            .toSet()
+    }.getOrDefault(emptySet())
 
     @Suppress("DEPRECATION")
     private fun queryPackages(): List<PackageInfo> {

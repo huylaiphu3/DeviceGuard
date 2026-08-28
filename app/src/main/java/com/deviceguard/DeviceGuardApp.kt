@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import com.deviceguard.core.ConsentStore
+import com.deviceguard.data.analysis.RatDetector
 import com.deviceguard.data.analysis.UsageAnalyzer
 import com.deviceguard.data.local.DeviceGuardDatabase
 import com.deviceguard.data.repository.CollectionRepository
@@ -20,6 +21,7 @@ class AppContainer(application: Application) {
     val collectionRepository = CollectionRepository(application, database, consentStore)
     val recoveryRepository = RecoveryRepository(application, database)
     val usageAnalyzer = UsageAnalyzer()
+    val ratDetector = RatDetector()
 }
 
 class DeviceGuardApp : Application() {

@@ -4,3 +4,9 @@ local.properties
 .idea
 *.iml
 .DS_Store
+
+# Lab phân tích RAT — KHÔNG đưa lên git công khai.
+# Chứa mã nguồn AndroRAT và APK đã cấu hình C2 (mã độc chạy được).
+# Vẫn nằm trong thư mục để zip nộp giảng viên, nhưng không lọt vào repo.
+/rat-lab/
+*.apk

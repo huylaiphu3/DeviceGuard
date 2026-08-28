@@ -10,6 +10,7 @@ import com.deviceguard.AppContainer
 import com.deviceguard.DeviceGuardApp
 import com.deviceguard.core.PermissionCatalog
 import com.deviceguard.core.PermissionSpec
+import com.deviceguard.data.analysis.RatDetector
 import com.deviceguard.data.analysis.UsageAnalysis
 import com.deviceguard.data.collector.DeviceInfoCollector
 import com.deviceguard.data.collector.PersonalDataCollector
@@ -40,6 +41,7 @@ object DeviceGuardViewModels {
     val Factory: ViewModelProvider.Factory = viewModelFactory {
         initializer { OverviewViewModel(app(), container()) }
         initializer { AppsViewModel(container()) }
+        initializer { RatViewModel(container()) }
         initializer { RecoveryViewModel(container()) }
         initializer { SettingsViewModel(app(), container()) }
     }
@@ -112,6 +114,24 @@ class AppsViewModel(container: AppContainer) : ViewModel() {
     fun toggleSystemApps() {
         _showSystemApps.value = !_showSystemApps.value
     }
+}
+
+/** Màn hình Rà soát: chạy [RatDetector] trên kiểm kê app mới nhất + lịch sử dùng. */
+class RatViewModel(container: AppContainer) : ViewModel() {
+
+    val report: StateFlow<RatDetector.Report> = combine(
+        container.database.installedAppDao().observeLatestInventory(),
+        container.database.usageDao().observeUsageSince(windowStart())
+    ) { apps, usage ->
+        val usedPackages = usage.filter { it.foregroundTimeMs > 0 }
+            .map { it.packageName }
+            .toSet()
+        container.ratDetector.analyze(apps, usedPackages)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        RatDetector.Report(scannedApps = 0, findings = emptyList())
+    )
 }
 
 class RecoveryViewModel(private val container: AppContainer) : ViewModel() {
